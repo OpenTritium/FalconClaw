@@ -1,17 +1,6 @@
 import { defineConfig, presetAttributify, presetIcons, presetTypography, presetWebFonts, presetWind4 } from 'unocss'
 
 export default defineConfig({
-  theme: {
-    keyframes: {
-      'shine-moving': {
-        '0%': { transform: 'translateX(-100%)' },
-        '100%': { transform: 'translateX(100%)' },
-      },
-    },
-    animation: {
-      shine: 'shine-moving 2s linear infinite',
-    },
-  },
   shortcuts: [],
   presets: [
     presetWind4(),

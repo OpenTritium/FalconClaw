@@ -8,8 +8,14 @@
         left-0
         h-full
         :style="{ width: progressStr }"
+        :class="progressClass"
         transition="all 0.3s ease">
-        <div class="progress-shine" absolute inset-0 :class="{ 'animate-shine': isAnimating }"></div>
+        <div 
+          class="progress-shine" 
+          absolute 
+          inset-0 
+          :class="{ 'animate-shine': isAnimating }"
+          :style="{ opacity: shineOpacity }"></div>
       </div>
     </div>
 
@@ -61,6 +67,26 @@ const isAnimating = computed(() => props.task.status === TaskStatus.RUNNING)
 
 const progressStr = computed(() => `${progress_in_percentage(props.task)}%`)
 
+const progressClass = computed(() => {
+  switch (props.task.status) {
+    case TaskStatus.RUNNING:
+      return 'progress-running'
+    case TaskStatus.PAUSED:
+      return 'progress-paused'
+    default:
+      return 'progress-default'
+  }
+})
+
+const shineOpacity = computed(() => {
+  switch (props.task.status) {
+    case TaskStatus.PAUSED:
+      return 0
+    default:
+      return 1
+  }
+})
+
 const sizeStr = computed(() => {
   const { task } = props
   if (task.status === TaskStatus.RUNNING || task.status === TaskStatus.PAUSED || task.status === TaskStatus.FAILED) {
@@ -94,11 +120,21 @@ const sizeStr = computed(() => {
 }
 
 .progress-fill {
-  /* [优化2] 使用对比度更高的绿色渐变 */
-  background: linear-gradient(90deg, #4ade80, #16a34a);
   opacity: 0.95;
   position: relative;
   overflow: hidden;
+}
+
+.progress-running {
+  background: linear-gradient(90deg, #60a5fa, #3b82f6);
+}
+
+.progress-paused {
+  background: #f97316;
+}
+
+.progress-default {
+  background: linear-gradient(90deg, #4ade80, #16a34a);
 }
 
 .progress-shine {
@@ -113,5 +149,18 @@ const sizeStr = computed(() => {
     rgba(255, 255, 255, 0.4) 50%,
     rgba(255, 255, 255, 0) 100%
   );
+}
+
+@keyframes shine-moving {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shine {
+  animation: shine-moving 2s linear infinite;
 }
 </style>
