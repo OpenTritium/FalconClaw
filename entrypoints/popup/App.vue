@@ -45,9 +45,8 @@ const { active: activeTasks, deactive: finishedTasks } = storeToRefs(tasks)
 
 <style scoped>
 .app-container {
-  min-width: 400px;
-  max-width: 400px;
-  min-height: 400px;
-  max-height: 800px;
+  width: 25rem;
+  min-height: 25rem;
+  max-height: 50rem;
 }
 </style>
