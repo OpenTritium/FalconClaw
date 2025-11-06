@@ -13,17 +13,18 @@
       </div>
       <div v-else class="empty-placeholder" text-center p="y-4" text="sm gray-500">暂无下载任务</div>
     </section>
+  </main>
+  <div v-if="finishedTasks.length > 0">
     <hr border="t gray-200" my="2" />
     <section p="x-4 y-3">
       <h2 font="semibold" text="md gray-700" mb="3">已完成</h2>
-      <div v-if="finishedTasks.length > 0">
+      <div>
         <DeactiveItem v-for="task in finishedTasks" :key="task.id" :task="task" @open-file="handleOpenFile"
           @open-folder="handleOpenFolder" @remove-record="handleRemoveRecord" @retry="handleRetry"
           @remove-file-and-record="handleRemoveFileAndRecord" />
       </div>
-      <div v-else class="empty-placeholder" text-center p="y-4" text="sm gray-500">暂无已完成的任务</div>
     </section>
-  </main>
+  </div>
 </div>
 </template>
 
