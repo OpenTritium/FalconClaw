@@ -1,5 +1,4 @@
-import { defineConfig, presetAttributify, presetIcons, presetTypography, presetWebFonts, presetWind4 } from 'unocss'
-import { presetAnimations } from 'unocss-preset-animations'
+import { defineConfig, presetAttributify, presetIcons, presetWebFonts, presetWind4 } from 'unocss'
 
 export default defineConfig({
   shortcuts: {
@@ -29,17 +28,43 @@ export default defineConfig({
       `,
     },
   ],
-  rules: [['animate-shine', { animation: 'shine-moving 2s linear infinite' }]],
+  rules: [['animate-shine', { animation: 'shine-moving 0.86s linear infinite' }]],
   presets: [
     presetWind4(),
-    presetAnimations(),
     presetAttributify(),
-    presetTypography(),
-    presetWebFonts(),
     presetIcons({
       scale: 1.2,
       warn: true,
+      collections: {
+        mdi: () => import('@iconify-json/mdi/icons.json').then(i => i.default),
+      },
+    }),
+    presetWebFonts({
+      provider: 'none',
+      fonts: {
+        sans: [
+          'ui-sans-serif',
+          'system-ui',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"Segoe UI"',
+          'Roboto',
+          '"Helvetica Neue"',
+          'Arial',
+          '"Noto Sans"',
+          '"PingFang SC"',
+          '"Hiragino Sans GB"',
+          '"Microsoft YaHei UI"',
+          '"Microsoft YaHei"',
+          '"Source Han Sans SC"',
+          '"Noto Sans CJK SC"',
+          'sans-serif',
+          '"Apple Color Emoji"',
+          '"Segoe UI Emoji"',
+          '"Segoe UI Symbol"',
+          '"Noto Color Emoji"',
+        ],
+      },
     }),
   ],
-  safelist: ['i-mdi-check', 'i-mdi-close'],
 })
