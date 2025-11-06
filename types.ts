@@ -44,14 +44,14 @@ type TaskState = { [K in TaskStatusName]: { status: K } & TaskStatePayloads[K] }
  * 定义一个任务（Task）的完整结构。
  * 它包含了任务的基础信息和当前的状态。
  */
-export type Task = {
+export type TaskInfo = {
   id: TaskId
   name: string
   size?: number
 } & TaskState
 
 // 0-100
-export function progress_in_percentage(status: Task): number {
+export function progress_in_percentage(status: TaskInfo): number {
   switch (status.status) {
     case TaskStatus.RUNNING:
     case TaskStatus.PAUSED:

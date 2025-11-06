@@ -1,65 +1,45 @@
 <template>
-  <div class="app-container" w="full" flex flex-col font-sans>
-    <!-- 标题栏 -->
-    <header class="header" flex items-center justify-between p="x-4 y-2" bg="gray-100" border="b gray-200">
-      <h1 text="lg gray-800" font="bold">下载管理器</h1>
-      <button class="settings-btn" i-mdi-cog-outline text="xl gray-600" hover:opacity="75" title="设置"></button>
-    </header>
-
-    <!-- 主内容区 -->
-    <main class="main-content" flex="1" overflow-y="auto" bg="gray-50">
-      <!-- 下载中任务列表 -->
-      <section class="ongoing-tasks" p="x-4 y-3">
-        <h2 font="semibold" text="md gray-700" mb="3">下载中</h2>
-        <div v-if="ongoingTasks.length > 0">
-          <ActiveItem
-            v-for="task in ongoingTasks"
-            :key="task.id"
-            :task="task"
-            @resume="handleResume"
-            @pause="handlePause"
-            @cancel="handleCancel" />
-        </div>
-        <div v-else class="empty-placeholder" text-center p="y-4" text="sm gray-500">暂无下载任务</div>
-      </section>
-
-      <!-- 分隔线 -->
-      <hr border="t gray-200" my="4" />
-
-      <!-- 已完成/失败/取消的任务列表 -->
-      <section class="completed-tasks" p="x-4 y-3">
-        <h2 font="semibold" text="md gray-700" mb="3">已完成</h2>
-        <div v-if="completedTasks.length > 0">
-          <DeactiveItem
-            v-for="task in completedTasks"
-            :key="task.id"
-            :task="task"
-            @open-file="handleOpenFile"
-            @open-folder="handleOpenFolder"
-            @remove-record="handleRemoveRecord"
-            @retry="handleRetry"
-            @remove-file-and-record="handleRemoveFileAndRecord" />
-        </div>
-        <div v-else class="empty-placeholder" text-center p="y-4" text="sm gray-500">暂无已完成的任务</div>
-      </section>
-    </main>
-  </div>
+<div w="full" h-screen flex="~ col" font-sans bg-gray-50>
+  <header flex="~ items-center justify-between shrink-0" p="x-4 y-2" bg="gray-100" border="b gray-200">
+    <h1 text="lg gray-800" font="bold">下载管理器</h1>
+    <button i-mdi-cog-outline text="xl gray-600" hover:opacity="75" title="设置" />
+  </header>
+  <main flex="1" overflow-y="auto">
+    <section p="x-4 y-3">
+      <h2 font="semibold" text="md gray-700" mb="3">进行中</h2>
+      <div v-if="activeTasks.length > 0">
+        <ActiveItem v-for="task in activeTasks" :key="task.id" :task="task" @resume="handleResume" @pause="handlePause"
+          @cancel="handleCancel" />
+      </div>
+      <div v-else class="empty-placeholder" text-center p="y-4" text="sm gray-500">暂无下载任务</div>
+    </section>
+    <hr border="t gray-200" my="2" />
+    <section p="x-4 y-3">
+      <h2 font="semibold" text="md gray-700" mb="3">已完成</h2>
+      <div v-if="finishedTasks.length > 0">
+        <DeactiveItem v-for="task in finishedTasks" :key="task.id" :task="task" @open-file="handleOpenFile"
+          @open-folder="handleOpenFolder" @remove-record="handleRemoveRecord" @retry="handleRetry"
+          @remove-file-and-record="handleRemoveFileAndRecord" />
+      </div>
+      <div v-else class="empty-placeholder" text-center p="y-4" text="sm gray-500">暂无已完成的任务</div>
+    </section>
+  </main>
+</div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import ActiveItem from '@/components/ActiveItem.vue' // 假设 DownloadItem.vue 在 components 目录下
-import DeactiveItem from '@/components/DeactiveItem.vue' // 假设 CompletedTaskItem.vue 在 components 目录下
-import { type Task, TaskStatus, type TaskId } from '@/types' // 假设 types.ts 在同级目录下
+import ActiveItem from '@/components/ActiveItem.vue'
+import DeactiveItem from '@/components/DeactiveItem.vue'
+import { type TaskInfo, TaskStatus, type TaskId } from '@/types'
 
-// 设置弹窗尺寸
-onMounted(() => {
-  document.body.style.minWidth = '500px'
-  document.body.style.minHeight = '400px'
-})
+// onMounted(() => {
+//   document.body.style.minWidth = '500px'
+//   document.body.style.minHeight = '400px'
+// })
 
 // Mock 数据，用于演示
-const tasks = ref<Task[]>([
+const tasks = ref<TaskInfo[]>([
   // 下载中
   {
     id: 1,
@@ -85,30 +65,22 @@ const tasks = ref<Task[]>([
   { id: 5, name: 'node-v20.9.0-win-x64.zip', size: 31457280, status: TaskStatus.CANCELLED },
 ])
 
-// 计算属性，用于分离不同状态的任务
-const ongoingTasks = computed(() =>
+const activeTasks = computed(() =>
   tasks.value.filter(task =>
-    [TaskStatus.RUNNING, TaskStatus.PAUSED].includes(
-      task.status as typeof TaskStatus.RUNNING | typeof TaskStatus.PAUSED
-    )
+    task.status === TaskStatus.RUNNING || task.status === TaskStatus.PAUSED
   )
 )
 
-const completedTasks = computed(() =>
+const finishedTasks = computed(() =>
   tasks.value.filter(task =>
-    [TaskStatus.COMPLETED, TaskStatus.FAILED, TaskStatus.CANCELLED].includes(
-      task.status as typeof TaskStatus.COMPLETED | typeof TaskStatus.FAILED | typeof TaskStatus.CANCELLED
-    )
+    task.status === TaskStatus.COMPLETED || task.status === TaskStatus.FAILED || task.status === TaskStatus.CANCELLED
   )
 )
 
-// 事件处理函数
-// 这里只是打印日志来模拟行为，实际应用中你需要实现与后端或浏览器下载 API 的交互
 const handleResume = (id: TaskId) => {
   console.log(`恢复任务 #${id}`)
   const task = tasks.value.find(t => t.id === id)
   if (task) {
-    // @ts-ignore
     task.status = TaskStatus.RUNNING
   }
 }
@@ -117,7 +89,6 @@ const handlePause = (id: TaskId) => {
   console.log(`暂停任务 #${id}`)
   const task = tasks.value.find(t => t.id === id)
   if (task) {
-    // @ts-ignore
     task.status = TaskStatus.PAUSED
   }
 }
@@ -126,7 +97,6 @@ const handleCancel = (id: TaskId) => {
   console.log(`取消任务 #${id}`)
   const task = tasks.value.find(t => t.id === id)
   if (task) {
-    // @ts-ignore
     task.status = TaskStatus.CANCELLED
   }
 }
@@ -162,3 +132,11 @@ const handleRemoveFileAndRecord = (id: TaskId) => {
   tasks.value = tasks.value.filter(t => t.id !== id)
 }
 </script>
+
+<style>
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+</style>
