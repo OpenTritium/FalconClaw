@@ -16,8 +16,10 @@
   },
   "dependencies": {
     "@wxt-dev/i18n": "^0.2.4",
+    "arktype": "^2.1.25",
     "pinia": "^3.0.4",
     "pretty-bytes": "^7.1.0",
+    "terser": "^5.44.1",
     "ts-pattern": "^5.9.0",
     "vue": "^3.5.23"
   },

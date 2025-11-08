@@ -1,33 +1,48 @@
 <template>
-<div h="12" relative mb="2" rounded="lg" flex="~ items-center" p="x-3" border="~ gray-200" bg-white
-  transition="all duration-200 ease" hover="translate-y--1px shadow-md">
-  <div text="xl" mr="3" :class="[statusStyle.icon, statusStyle.colorClass]" />
-  <div flex="1" min-w-0>
-    <div text="sm" font="medium" truncate>{{ task.name }}</div>
-    <div v-if="statusInfo" text="xs gray-500" truncate :title="statusInfo">{{ statusInfo }}</div>
+  <div
+    h="12"
+    relative
+    mb="2"
+    rounded="lg"
+    flex="~ items-center"
+    p="x-3"
+    border="~ gray-200"
+    bg-white
+    transition="all duration-200 ease"
+    hover="translate-y--1px shadow-md">
+    <div text="xl" mr="3" :class="[statusStyle.icon, statusStyle.colorClass]" />
+    <div flex="1" min-w-0>
+      <div text="sm" font="medium" truncate>{{ task.name }}</div>
+      <div v-if="statusInfo" text="xs gray-500" truncate :title="statusInfo">{{ statusInfo }}</div>
+    </div>
+    <div flex="~ gap-2">
+      <template v-if="task.status === TaskStatus.COMPLETED">
+        <button @click="emit('open-file', task.id)" i-mdi-file-outline btn-action :title="t('openFile')" />
+        <button @click="emit('open-folder', task.id)" i-mdi-folder-outline btn-action :title="t('openFolder')" />
+        <button @click="emit('remove-record', task.id)" i-mdi-delete-outline btn-action :title="t('removeRecord')" />
+      </template>
+      <template v-if="task.status === TaskStatus.FAILED">
+        <button @click="emit('retry', task.id)" i-mdi-reload btn-action :title="t('retry')" />
+        <button
+          @click="emit('remove-file-and-record', task.id)"
+          i-mdi-delete-forever-outline
+          btn-action
+          :title="t('removeFileAndRecord')" />
+      </template>
+      <template v-if="task.status === TaskStatus.CANCELLED">
+        <button
+          @click="emit('remove-file-and-record', task.id)"
+          i-mdi-delete-forever-outline
+          btn-action
+          :title="t('removeFileAndRecord')" />
+      </template>
+    </div>
   </div>
-  <div flex="~ gap-2">
-    <template v-if="task.status === TaskStatus.COMPLETED">
-      <button @click="emit('open-file', task.id)" i-mdi-file-outline btn-action :title="t('openFile')" />
-      <button @click="emit('open-folder', task.id)" i-mdi-folder-outline btn-action :title="t('openFolder')" />
-      <button @click="emit('remove-record', task.id)" i-mdi-delete-outline btn-action :title="t('removeRecord')" />
-    </template>
-    <template v-if="task.status === TaskStatus.FAILED">
-      <button @click="emit('retry', task.id)" i-mdi-reload btn-action :title="t('retry')" />
-      <button @click="emit('remove-file-and-record', task.id)" i-mdi-delete-forever-outline btn-action
-        :title="t('removeFileAndRecord')" />
-    </template>
-    <template v-if="task.status === TaskStatus.CANCELLED">
-      <button @click="emit('remove-file-and-record', task.id)" i-mdi-delete-forever-outline btn-action
-        :title="t('removeFileAndRecord')" />
-    </template>
-  </div>
-</div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { type TaskInfo, type TaskId, TaskStatus } from '@/types'
+import { type TaskInfo, type TaskId, TaskStatus } from '@/types/task'
 import prettyBytes from 'pretty-bytes'
 import { match, P } from 'ts-pattern'
 import { i18n } from '#i18n'

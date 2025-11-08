@@ -6,15 +6,31 @@ export default defineConfig({
   manifest: {
     name: '__MSG_extensionName__',
     description: '__MSG_extensionDescription__',
-    permissions: ['downloads', 'webRequest'],
+    permissions: ['downloads', 'webRequest', 'nativeMessaging'],
     host_permissions: ['<all_urls>'],
     default_locale: 'en',
   },
-  vite: _ => ({
-    plugins: [UnoCSS()],
-    build: {
-      minify: true,
-      report: true,
-    },
-  }),
+  vite: env => {
+    const isProduction = env.mode === 'production'
+    return {
+      plugins: [UnoCSS()],
+      build: {
+        minify: isProduction ? 'terser' : false,
+        terserOptions: {
+          ecma: 2020,
+          compress: {
+            drop_console: true,
+            passes: 3,
+          },
+          mangle: {
+            toplevel: true,
+          },
+          format: {
+            quote_style: 1,
+            comments: false,
+          },
+        },
+      },
+    }
+  },
 })
