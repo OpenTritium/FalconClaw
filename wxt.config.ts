@@ -14,23 +14,23 @@ export default defineConfig({
     const isProduction = env.mode === 'production'
     return {
       plugins: [UnoCSS()],
-      build: {
-        minify: isProduction ? 'terser' : false,
-        terserOptions: {
-          ecma: 2020,
-          compress: {
-            drop_console: true,
-            passes: 3,
-          },
-          mangle: {
-            toplevel: true,
-          },
-          format: {
-            quote_style: 1,
-            comments: false,
-          },
-        },
-      },
+      // build: {
+      //   minify: isProduction ? 'terser' : false,
+      //   terserOptions: {
+      //     ecma: 2020,
+      //     compress: {
+      //       drop_console: true,
+      //       passes: 3,
+      //     },
+      //     mangle: {
+      //       toplevel: true,
+      //     },
+      //     format: {
+      //       quote_style: 1,
+      //       comments: false,
+      //     },
+      //   },
+      // },
     }
   },
 })

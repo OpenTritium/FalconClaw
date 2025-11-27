@@ -1,14 +1,13 @@
-import { TaskInfo } from '@/types/task'
+import { Command, CommandName } from '@/types/cmd'
+import { TaskId, TaskInfo, TaskList } from '@/types/task'
+import { type } from 'arktype'
 
-const NativeCommand = {
-  SUBSCRIBE: 'subscribe',
-  UNSUBSCRIBE: 'unsubscribe',
-} as const
+const cache = new Map<TaskId, TaskInfo>()
 
 export const FAILED_CONNECT_TO_NATIVE = 'FailedConnectToNative'
 export type NativePayload = TaskInfo[] | typeof FAILED_CONNECT_TO_NATIVE
 
-const NativeAppName = 'com.example.my_native_app'
+const NativeAppName = 'com.opentritium.falcon_claw'
 
 export default defineBackground(() => {
   const { runtime, downloads } = browser
@@ -21,6 +20,13 @@ export default defineBackground(() => {
   })
   // nativeport 来消息的时候转发给 popup，此时可能 popup 恰好关闭，光靠 ？断言不太行
   nativePort.onMessage.addListener(msg => {
+    const tasks = TaskList(msg)
+    if (tasks instanceof type.errors) {
+      console.error(tasks.summary)
+      return
+    }
+    tasks.map(task => cache.set(task.id, task))
+    console.log('cache: ', cache)
     try {
       popupPort?.postMessage(msg)
     } catch (_) {
@@ -29,24 +35,30 @@ export default defineBackground(() => {
     }
   })
   runtime.onConnect.addListener(port => {
+    if (port.name !== 'popup') return
     popupPort = port
     if (!nativePort) {
       // 如果 nativeport 断开，但 popup 刚连接上就告诉 popup nativeport 连接失败
       popupPort?.postMessage(FAILED_CONNECT_TO_NATIVE)
       return
     }
-    // 此时 popup 连上了，尝试告诉 nativeport 开始订阅更新
-    nativePort.postMessage(NativeCommand.SUBSCRIBE)
-    console.log('Background: Popup 连接，通知 Native 开始订阅更新')
-    // popup 断开连接的时候 nativeport 几乎总是在线，就通知 native 程序停止订阅
+    // 此时 popup 连上了，给 popup 一个快照
+    popupPort?.postMessage(Array.from(cache.values()))
+    console.log('post cache to popup', Array.from(cache.values()))
+    // popup 断开连接的时候就置空
     port.onDisconnect.addListener(() => {
-      nativePort?.postMessage(NativeCommand.UNSUBSCRIBE)
-      console.log('Background: Popup 断开连接，通知 Native 停止订阅更新')
+      popupPort = null
+    })
+    port.onMessage.addListener((cmd: Command) => {
+      nativePort?.postMessage(cmd)
     })
   })
-  downloads.onCreated.addListener(async downloadItem => {
+
+  downloads.onDeterminingFilename.addListener(async downloadItem => {
     console.log(`onCreated: 拦截到 URL: ${downloadItem.url}`)
     await downloads.cancel(downloadItem.id)
-    console.log('下载已被成功取消！')
+    let createCmd: Command = { opt: CommandName.CREATE, url: downloadItem.finalUrl }
+    console.log(`发送创建任务命令: ${JSON.stringify(createCmd)}`)
+    nativePort?.postMessage(createCmd)
   })
 })

@@ -48,6 +48,8 @@ export const TaskState = type({
 export const TaskInfo = type({
   id: TaskId,
   name: 'string',
+  url: 'string',
+  'path?': 'string',
   'size?': 'number',
 }).and(TaskState)
 

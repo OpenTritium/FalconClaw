@@ -1,11 +1,11 @@
 import { TaskId } from './task'
 
 /**
- * 定义所有可能的命令名称的常量。
+ * 定义所有可能的命令名称的常量
  */
 export const CommandName = {
   CHANGE_CONCURRENCY: 'change_concurrency',
-  CHANGE_RATE_LIMIT: 'change_rate_limit',
+  CHANGE_RATE_LIMITED: 'change_rate_limited',
   PAUSE: 'pause',
   RESUME: 'resume',
   CANCEL: 'cancel',
@@ -22,8 +22,14 @@ export type CommandTypeName = (typeof CommandName)[keyof typeof CommandName]
  * 定义每种命令对应的 Payload。
  */
 type CommandPayloads = {
-  [CommandName.CHANGE_CONCURRENCY]: { id: TaskId; concurrency: number }
-  [CommandName.CHANGE_RATE_LIMIT]: { id: TaskId; limit: number }
+  [CommandName.CHANGE_CONCURRENCY]: {
+    id: TaskId
+    concurrency: number
+  }
+  [CommandName.CHANGE_RATE_LIMITED]: {
+    id: TaskId
+    limit: number | null
+  }
   [CommandName.PAUSE]: { id: TaskId }
   [CommandName.RESUME]: { id: TaskId }
   [CommandName.CANCEL]: { id: TaskId }
@@ -33,8 +39,10 @@ type CommandPayloads = {
 
 /**
  * 命令的可辨识联合。
- * `name` 字段作为辨识符，清晰地定义了每个命令的结构。
+ * `opt` 字段作为辨识符，以匹配 Rust 的 `#[serde(tag = "opt")]`。
  */
 export type Command = {
-  [K in CommandTypeName]: { name: K } & (K extends keyof CommandPayloads ? CommandPayloads[K] : {})
+  [K in CommandTypeName]: {
+    opt: K
+  } & CommandPayloads[K]
 }[CommandTypeName]
